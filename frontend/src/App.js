@@ -2,10 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import HomePage from './pages/HomePage';
-import AccueilPage from './pages/AccueilPage';
-import EnregistrementPage from './pages/EnregistrementPage';
-import ConsultationPage from './pages/ConsultationPage';
+import HallPage from './pages/HallPage';
+import ServicePage from './pages/ServicePage';
 import DisplayPage from './pages/DisplayPage';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
@@ -21,10 +19,8 @@ export default function App() {
       <Navbar />
       <div style={styles.content}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/accueil" element={<AccueilPage />} />
-          <Route path="/enregistrement" element={<ProtectedRoute><EnregistrementPage /></ProtectedRoute>} />
-          <Route path="/consultation" element={<ProtectedRoute><ConsultationPage /></ProtectedRoute>} />
+          <Route path="/" element={<HallPage />} />
+          <Route path="/service/:type" element={<ProtectedRoute><ServicePage /></ProtectedRoute>} />
           <Route path="/display" element={<DisplayPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<ProtectedRoute roles={['super_admin', 'admin']}><AdminPage /></ProtectedRoute>} />

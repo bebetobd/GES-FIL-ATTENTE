@@ -3,11 +3,11 @@ const { authenticate } = require('../middlewares/auth');
 const ticketController = require('../controllers/ticketController');
 
 router.post('/', ticketController.creerTicket);
-router.post('/station/:stationId/call-enregistrement', authenticate, ticketController.appelerEnregistrement);
-router.put('/:id/validate-enregistrement', authenticate, ticketController.validerEnregistrement);
-router.post('/station/:stationId/call-consultation', authenticate, ticketController.appelerConsultation);
-router.put('/:id/complete-consultation', authenticate, ticketController.terminerConsultation);
-router.put('/:id/cancel', authenticate, ticketController.annulerTicket);
+router.get('/file/:serviceId', ticketController.getFileService);
 router.get('/stats', authenticate, ticketController.getStats);
+router.post('/:serviceId/station/:stationId/call', authenticate, ticketController.appelerSuivant);
+router.put('/:id/start', authenticate, ticketController.commencerService);
+router.put('/:id/complete', authenticate, ticketController.terminerService);
+router.put('/:id/cancel', authenticate, ticketController.annulerTicket);
 
 module.exports = router;
