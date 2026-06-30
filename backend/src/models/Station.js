@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Counter = sequelize.define('Counter', {
+const Station = sequelize.define('Station', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -11,19 +11,13 @@ const Counter = sequelize.define('Counter', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  numero: {
-    type: DataTypes.INTEGER,
+  type: {
+    type: DataTypes.ENUM('accueil', 'enregistrement', 'consultation'),
     allowNull: false,
-  },
-  serviceId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: { model: 'Services', key: 'id' },
   },
   agentId: {
     type: DataTypes.UUID,
     allowNull: true,
-    references: { model: 'Users', key: 'id' },
   },
   actif: {
     type: DataTypes.BOOLEAN,
@@ -33,4 +27,4 @@ const Counter = sequelize.define('Counter', {
   timestamps: true,
 });
 
-module.exports = Counter;
+module.exports = Station;

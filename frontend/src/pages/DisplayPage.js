@@ -1,153 +1,146 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { connectSocket } from '../services/socket';
 
 const styles = {
   container: { maxWidth: 1200, margin: '0 auto' },
-  serviceGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-    gap: 20,
+  title: { fontSize: 24, fontWeight: 700, textAlign: 'center', marginBottom: 24, color: '#0d47a1' },
+  mainGrid: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 },
+  sectionCard: { background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' },
+  sectionTitle: (color) => ({ fontSize: 18, fontWeight: 600, color, marginBottom: 16, paddingBottom: 8, borderBottom: `3px solid ${color}` }),
+  currentTicket: {
+    textAlign: 'center', padding: 24, background: '#e3f2fd', borderRadius: 12, marginBottom: 16,
   },
-  serviceCard: (selected) => ({
-    background: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-    cursor: selected ? 'default' : 'pointer',
-    border: selected ? '3px solid #1a73e8' : '3px solid transparent',
-    transition: 'all 0.3s',
-  }),
-  serviceName: { fontSize: 20, fontWeight: 700, color: '#1a73e8', marginBottom: 16 },
-  currentTicket: { fontSize: 72, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', letterSpacing: 6 },
-  currentLabel: { textAlign: 'center', fontSize: 16, color: '#666', marginTop: 4 },
-  counterRow: {
-    display: 'flex',
-    justifyContent: 'space-around',
-    marginTop: 20,
-    gap: 12,
-    flexWrap: 'wrap',
+  ticketNumber: { fontSize: 48, fontWeight: 800, color: '#0d47a1' },
+  ticketPatient: { fontSize: 18, fontWeight: 500, color: '#333', marginTop: 4 },
+  stationLabel: { fontSize: 14, color: '#555', marginTop: 4 },
+  waitingSection: { marginTop: 16 },
+  listTitle: { fontSize: 14, fontWeight: 600, color: '#555', marginBottom: 8 },
+  listItem: {
+    display: 'flex', justifyContent: 'space-between', padding: '8px 12px',
+    borderBottom: '1px solid #f5f5f5', fontSize: 14,
   },
-  counterItem: (active) => ({
-    textAlign: 'center',
-    padding: '12px 20px',
-    background: active ? '#d4edda' : '#f8f9fa',
-    borderRadius: 10,
-    minWidth: 100,
+  consultationGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 },
+  consultCard: (occupied) => ({
+    background: occupied ? '#e8f5e9' : '#f5f5f5',
+    borderRadius: 12, padding: 16, textAlign: 'center',
+    border: occupied ? '2px solid #4caf50' : '2px solid #e0e0e0',
   }),
-  counterName: { fontSize: 14, fontWeight: 600, color: '#333' },
-  counterTicket: { fontSize: 28, fontWeight: 700, color: active => active ? '#155724' : '#999' },
-  waitingCount: { fontSize: 14, color: '#856404', marginTop: 8, textAlign: 'center' },
-  historySection: { marginTop: 24 },
-  historyTitle: { fontSize: 14, fontWeight: 600, color: '#666', marginBottom: 8 },
-  historyGrid: { display: 'flex', gap: 8, flexWrap: 'wrap' },
-  historyItem: { padding: '6px 14px', background: '#f0f2f5', borderRadius: 6, fontSize: 13, color: '#666' },
-  selectBar: { display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' },
-  selectBtn: (active) => ({
-    padding: '12px 24px',
-    borderRadius: 10,
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: 15,
-    fontWeight: 600,
-    background: active ? '#1a73e8' : '#e0e0e0',
-    color: active ? '#fff' : '#333',
-    transition: 'all 0.2s',
-  }),
+  consultStation: { fontSize: 14, fontWeight: 600, color: '#333', marginBottom: 8 },
+  consultTicket: { fontSize: 28, fontWeight: 700, color: '#2e7d32' },
+  consultPatient: { fontSize: 13, color: '#555', marginTop: 2 },
+  footerCards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 },
+  infoCard: { background: '#fff', borderRadius: 10, padding: 16, textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+  infoNum: { fontSize: 28, fontWeight: 700, color: '#1565c0' },
+  infoLabel: { fontSize: 13, color: '#666', marginTop: 2 },
+  doneList: { marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' },
+  doneItem: { padding: '6px 16px', background: '#f5f5f5', borderRadius: 20, fontSize: 13, color: '#666' },
+  empty: { textAlign: 'center', padding: 30, color: '#999', fontSize: 14 },
 };
 
 export default function DisplayPage() {
-  const { serviceId } = useParams();
-  const [services, setServices] = useState([]);
-  const [selectedService, setSelectedService] = useState(null);
-  const [displayData, setDisplayData] = useState(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    api.get('/services').then(({ data }) => {
-      setServices(data.services);
-      if (serviceId) {
-        setSelectedService(serviceId);
-      }
-    }).catch(() => {});
-  }, [serviceId]);
-
-  useEffect(() => {
-    if (!selectedService) return;
-    const fetchDisplay = () => {
-      api.get(`/display/${selectedService}`).then(({ data }) => setDisplayData(data)).catch(() => {});
-    };
-    fetchDisplay();
-    const interval = setInterval(fetchDisplay, 5000);
+    const load = () => api.get('/display').then(({ data }) => setData(data)).catch(() => {});
+    load();
+    const interval = setInterval(load, 3000);
     const socket = connectSocket();
-    socket.emit('join-display', selectedService);
-    socket.on('ticket-called', fetchDisplay);
-    socket.on('ticket-completed', fetchDisplay);
-    return () => {
-      clearInterval(interval);
-      socket.off('ticket-called');
-      socket.off('ticket-completed');
-    };
-  }, [selectedService]);
+    socket.emit('join-display');
+    socket.on('ticket-cree', load);
+    socket.on('enregistrement-appele', load);
+    socket.on('enregistrement-valide', load);
+    socket.on('consultation-appele', load);
+    socket.on('consultation-terminee', load);
+    return () => { clearInterval(interval); socket.off('ticket-cree'); socket.off('enregistrement-appele'); socket.off('enregistrement-valide'); socket.off('consultation-appele'); socket.off('consultation-terminee'); };
+  }, []);
 
-  if (!selectedService) {
-    return (
-      <div style={styles.container}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Écran d'Affichage</h1>
-        <p style={{ color: '#666', marginBottom: 20 }}>Sélectionnez un service :</p>
-        <div style={styles.selectBar}>
-          {services.map((s) => (
-            <button key={s.id} onClick={() => setSelectedService(s.id)} style={styles.selectBtn(false)}>
-              {s.nom} ({s.prefixe})
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!displayData) return <div style={{ padding: 40, textAlign: 'center' }}>Chargement...</div>;
+  if (!data) return <div style={{ padding: 40, textAlign: 'center' }}>Chargement...</div>;
 
   return (
     <div style={styles.container}>
-      <div style={styles.serviceCard(true)}>
-        <div style={styles.serviceName}>{displayData.service.nom}</div>
-        <div style={styles.currentTicket}>
-          {displayData.ticketEnCours?.numero || '---'}
-        </div>
-        <div style={styles.currentLabel}>
-          {displayData.ticketEnCours ? 'Appelé au ' + displayData.ticketEnCours.guichet : 'En attente de ticket'}
-        </div>
-        <div style={styles.counterRow}>
-          {(displayData.guichets || []).map((c) => (
-            <div key={c.id} style={styles.counterItem(c.estOccupe)}>
-              <div style={styles.counterName}>{c.nom}</div>
-              <div style={styles.counterTicket(c.estOccupe)}>{c.ticketEnCours || '---'}</div>
+      <h1 style={styles.title}>📺 Tableau de Bord - Flux des Patients</h1>
+
+      <div style={styles.mainGrid}>
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionTitle('#1565c0')}>📋 Enregistrement</div>
+          {data.enCoursEnregistrement ? (
+            <div style={styles.currentTicket}>
+              <div style={{ fontSize: 13, color: '#555' }}>En cours d'enregistrement</div>
+              <div style={styles.ticketNumber}>{data.enCoursEnregistrement.numero}</div>
+              <div style={styles.ticketPatient}>{data.enCoursEnregistrement.nomPatient || 'Patient'}</div>
+              <div style={styles.stationLabel}>Au: {data.enCoursEnregistrement.stationEnregistrement}</div>
             </div>
-          ))}
+          ) : (
+            <div style={styles.empty}>Aucun enregistrement en cours</div>
+          )}
+          <div style={styles.waitingSection}>
+            <div style={styles.listTitle}>En attente ({data.enAttenteEnregistrement?.length || 0})</div>
+            {data.enAttenteEnregistrement?.length > 0 ? (
+              data.enAttenteEnregistrement.slice(0, 10).map((t) => (
+                <div key={t.id} style={styles.listItem}>
+                  <span><strong>{t.numero}</strong> - {t.nomPatient || 'Patient'}</span>
+                  <span>{new Date(t.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              ))
+            ) : <div style={styles.empty}>Liste vide</div>}
+          </div>
         </div>
-        <div style={styles.waitingCount}>
-          {displayData.enAttente} personne(s) en attente
+
+        <div style={styles.sectionCard}>
+          <div style={styles.sectionTitle('#2e7d32')}>🩺 Consultations</div>
+          <div style={{ fontSize: 40, fontWeight: 800, color: '#2e7d32', textAlign: 'center' }}>
+            {data.enAttenteConsultation || 0}
+          </div>
+          <div style={{ textAlign: 'center', fontSize: 14, color: '#666' }}>Patient(s) en attente</div>
+
+          <div style={{ marginTop: 20, fontSize: 14, fontWeight: 600, color: '#555' }}>Derniers terminés</div>
+          <div style={styles.doneList}>
+            {data.derniersTermines?.map((t) => (
+              <span key={t.id} style={styles.doneItem}>✅ {t.numero}</span>
+            ))}
+            {(!data.derniersTermines || data.derniersTermines.length === 0) && (
+              <div style={styles.empty}>Aucun</div>
+            )}
+          </div>
         </div>
       </div>
 
-      {displayData.derniersAppeles?.length > 0 && (
-        <div style={styles.historySection}>
-          <div style={styles.historyTitle}>Derniers tickets appelés</div>
-          <div style={styles.historyGrid}>
-            {displayData.derniersAppeles.map((t) => (
-              <span key={t.id} style={styles.historyItem}>{t.numero}</span>
-            ))}
-          </div>
-        </div>
-      )}
+      <div style={styles.sectionTitle('#2e7d32')}>Cabinet de Consultation</div>
+      <div style={styles.consultationGrid}>
+        {data.stations?.filter(s => s.type === 'consultation').map((station) => {
+          const enCours = data.enCoursConsultation?.find(t => t.stationConsultation === station.nom);
+          return (
+            <div key={station.id} style={styles.consultCard(!!enCours)}>
+              <div style={styles.consultStation}>{station.nom}</div>
+              {station.agent && <div style={{ fontSize: 12, color: '#999', marginBottom: 4 }}>Dr. {station.agent.nom}</div>}
+              {enCours ? (
+                <>
+                  <div style={styles.consultTicket}>{enCours.numero}</div>
+                  <div style={styles.consultPatient}>{enCours.nomPatient || 'Patient'}</div>
+                </>
+              ) : (
+                <div style={{ color: '#999', fontSize: 14, padding: 8 }}>Disponible</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-      <button
-        onClick={() => setSelectedService(null)}
-        style={{ marginTop: 20, padding: '8px 16px', border: 'none', borderRadius: 8, background: '#6c757d', color: '#fff', cursor: 'pointer', fontSize: 14 }}
-      >
-        Changer de service
-      </button>
+      <div style={styles.footerCards}>
+        <div style={styles.infoCard}>
+          <div style={styles.infoNum}>{data.enAttenteEnregistrement?.length || 0}</div>
+          <div style={styles.infoLabel}>En attente enreg.</div>
+        </div>
+        <div style={styles.infoCard}>
+          <div style={styles.infoNum}>{data.enAttenteConsultation || 0}</div>
+          <div style={styles.infoLabel}>En attente consult.</div>
+        </div>
+        <div style={styles.infoCard}>
+          <div style={styles.infoNum}>{data.enCoursConsultation?.length || 0}</div>
+          <div style={styles.infoLabel}>En consultation</div>
+        </div>
+      </div>
     </div>
   );
 }

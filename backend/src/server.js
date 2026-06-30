@@ -10,7 +10,7 @@ const logger = require('./utils/logger');
 const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
 const serviceRoutes = require('./routes/services');
-const counterRoutes = require('./routes/counters');
+const stationRoutes = require('./routes/stations');
 const displayRoutes = require('./routes/display');
 
 const app = express();
@@ -34,7 +34,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/services', serviceRoutes);
-app.use('/api/counters', counterRoutes);
+app.use('/api/stations', stationRoutes);
 app.use('/api/display', displayRoutes);
 
 app.get('/api/health', (req, res) => {
@@ -46,12 +46,12 @@ app.use(errorHandler);
 io.on('connection', (socket) => {
   logger.info(`Client connecté: ${socket.id}`);
 
-  socket.on('join-counter', (counterId) => {
-    socket.join(`counter-${counterId}`);
+  socket.on('join-station', (type) => {
+    socket.join(`station-${type}`);
   });
 
-  socket.on('join-display', (serviceId) => {
-    socket.join(`display-${serviceId}`);
+  socket.on('join-display', () => {
+    socket.join('display');
   });
 
   socket.on('disconnect', () => {
@@ -64,7 +64,7 @@ const PORT = process.env.PORT || 5000;
 sequelize.authenticate()
   .then(() => {
     logger.info('Connexion à la base de données établie avec succès');
-    return sequelize.sync({ alter: true });
+    return sequelize.sync({ force: false });
   })
   .then(() => {
     server.listen(PORT, () => {

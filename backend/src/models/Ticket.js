@@ -15,38 +15,59 @@ const Ticket = sequelize.define('Ticket', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  nomPatient: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   statut: {
-    type: DataTypes.ENUM('en_attente', 'appele', 'en_cours', 'termine', 'annule'),
+    type: DataTypes.ENUM(
+      'en_attente',
+      'en_enregistrement',
+      'en_attente_consultation',
+      'en_consultation',
+      'termine',
+      'annule'
+    ),
     defaultValue: 'en_attente',
   },
   serviceId: {
     type: DataTypes.UUID,
     allowNull: false,
-    references: { model: 'Services', key: 'id' },
   },
-  agentId: {
+  creePar: {
     type: DataTypes.UUID,
     allowNull: true,
-    references: { model: 'Users', key: 'id' },
   },
-  guichet: {
+  agentEnregistrement: {
+    type: DataTypes.UUID,
+    allowNull: true,
+  },
+  agentConsultation: {
+    type: DataTypes.UUID,
+    allowNull: true,
+  },
+  stationEnregistrement: {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  appeleLe: {
+  stationConsultation: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  appeleEnregistrementLe: {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  prisEnChargeLe: {
+  valideEnregistrementLe: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  appeleConsultationLe: {
     type: DataTypes.DATE,
     allowNull: true,
   },
   termineLe: {
     type: DataTypes.DATE,
-    allowNull: true,
-  },
-  tempsAttente: {
-    type: DataTypes.INTEGER,
     allowNull: true,
   },
 }, {

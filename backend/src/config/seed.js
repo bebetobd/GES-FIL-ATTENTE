@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sequelize, User, Service, Counter } = require('../models');
+const { sequelize, User, Service, Station } = require('../models');
 const logger = require('../utils/logger');
 
 async function seed() {
@@ -13,16 +13,37 @@ async function seed() {
       role: 'super_admin',
     });
 
-    const agent1 = await User.create({
-      nom: 'Agent 1',
-      email: 'agent1@example.com',
+    const agentAccueil = await User.create({
+      nom: 'Agent Accueil',
+      email: 'accueil@example.com',
       motDePasse: 'agent123',
       role: 'agent',
     });
 
-    const agent2 = await User.create({
-      nom: 'Agent 2',
-      email: 'agent2@example.com',
+    const secretaire = await User.create({
+      nom: 'Secrétaire Médical',
+      email: 'secretaire@example.com',
+      motDePasse: 'agent123',
+      role: 'agent',
+    });
+
+    const docteur1 = await User.create({
+      nom: 'Dr. Kouassi',
+      email: 'docteur1@example.com',
+      motDePasse: 'agent123',
+      role: 'agent',
+    });
+
+    const docteur2 = await User.create({
+      nom: 'Dr. Koné',
+      email: 'docteur2@example.com',
+      motDePasse: 'agent123',
+      role: 'agent',
+    });
+
+    const docteur3 = await User.create({
+      nom: 'Dr. Diallo',
+      email: 'docteur3@example.com',
       motDePasse: 'agent123',
       role: 'agent',
     });
@@ -30,30 +51,41 @@ async function seed() {
     const serviceAccueil = await Service.create({
       nom: 'Accueil',
       prefixe: 'A',
-      description: 'Service d\'accueil et orientation',
+      type: 'accueil',
+      description: 'Hall d\'accueil - Création des tickets',
+      ordre: 1,
     });
 
-    const serviceCaisse = await Service.create({
-      nom: 'Caisse',
+    const serviceEnregistrement = await Service.create({
+      nom: 'Enregistrement',
       prefixe: 'B',
-      description: 'Service de paiement et facturation',
+      type: 'enregistrement',
+      description: 'Bureau secrétariat - Enregistrement des patients',
+      ordre: 2,
     });
 
-    const serviceInfo = await Service.create({
-      nom: 'Information',
+    const serviceConsultation = await Service.create({
+      nom: 'Consultation',
       prefixe: 'C',
-      description: 'Service d\'information et renseignements',
+      type: 'consultation',
+      description: 'Consultation et traitement par les docteurs',
+      ordre: 3,
     });
 
-    await Counter.create({ nom: 'Guichet 1', numero: 1, serviceId: serviceAccueil.id, agentId: agent1.id });
-    await Counter.create({ nom: 'Guichet 2', numero: 2, serviceId: serviceAccueil.id });
-    await Counter.create({ nom: 'Caisse 1', numero: 1, serviceId: serviceCaisse.id, agentId: agent2.id });
-    await Counter.create({ nom: 'Caisse 2', numero: 2, serviceId: serviceCaisse.id });
-    await Counter.create({ nom: 'Info 1', numero: 1, serviceId: serviceInfo.id });
+    await Station.create({ nom: 'Accueil 1', type: 'accueil', agentId: agentAccueil.id });
+    await Station.create({ nom: 'Secrétariat', type: 'enregistrement', agentId: secretaire.id });
+    await Station.create({ nom: 'Cabinet Dr. Kouassi', type: 'consultation', agentId: docteur1.id });
+    await Station.create({ nom: 'Cabinet Dr. Koné', type: 'consultation', agentId: docteur2.id });
+    await Station.create({ nom: 'Cabinet Dr. Diallo', type: 'consultation', agentId: docteur3.id });
+    await Station.create({ nom: 'Bureau DG', type: 'consultation' });
 
     logger.info('Base de données initialisée avec succès !');
     logger.info('Admin: admin@example.com / admin123');
-    logger.info('Agent: agent1@example.com / agent123');
+    logger.info('Accueil: accueil@example.com / agent123');
+    logger.info('Secrétaire: secretaire@example.com / agent123');
+    logger.info('Docteur 1: docteur1@example.com / agent123');
+    logger.info('Docteur 2: docteur2@example.com / agent123');
+    logger.info('Docteur 3: docteur3@example.com / agent123');
 
     process.exit(0);
   } catch (error) {

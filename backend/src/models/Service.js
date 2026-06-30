@@ -15,8 +15,16 @@ const Service = sequelize.define('Service', {
     type: DataTypes.STRING(1),
     allowNull: false,
   },
+  type: {
+    type: DataTypes.ENUM('accueil', 'enregistrement', 'consultation'),
+    allowNull: false,
+  },
   description: {
     type: DataTypes.TEXT,
+  },
+  ordre: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
   actif: {
     type: DataTypes.BOOLEAN,
