@@ -7,6 +7,8 @@ import ServicePage from './pages/ServicePage';
 import DisplayPage from './pages/DisplayPage';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
+import HistoriquePage from './pages/HistoriquePage';
+import StatsPage from './pages/StatsPage';
 
 const styles = {
   container: { minHeight: '100vh', display: 'flex', flexDirection: 'column' },
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="/" element={<HallPage />} />
           <Route path="/service/:type" element={<ProtectedRoute><ServicePage /></ProtectedRoute>} />
           <Route path="/display" element={<DisplayPage />} />
+          <Route path="/historique" element={<ProtectedRoute roles={['super_admin', 'admin']}><HistoriquePage /></ProtectedRoute>} />
+          <Route path="/stats" element={<ProtectedRoute roles={['super_admin', 'admin']}><StatsPage /></ProtectedRoute>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<ProtectedRoute roles={['super_admin', 'admin']}><AdminPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
